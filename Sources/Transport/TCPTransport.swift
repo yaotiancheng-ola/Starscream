@@ -110,7 +110,7 @@ public class TCPTransport: Transport {
             switch newState {
             case .ready:
                 self?.delegate?.connectionChanged(state: .connected)
-            case .waiting:
+            case .waiting(let error):
                 switch error {
                     case.dns(let type):
                         print("waiting dns error: \(type)")
