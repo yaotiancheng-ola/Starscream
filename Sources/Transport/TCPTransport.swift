@@ -111,7 +111,22 @@ public class TCPTransport: Transport {
             case .ready:
                 self?.delegate?.connectionChanged(state: .connected)
             case .waiting:
-                self?.delegate?.connectionChanged(state: .waiting)
+                switch error {
+                    case.dns(let type):
+                        print("waiting dns error: \(type)")
+                        self?.delegate?.connectionChanged(state: .failed(error))
+                        break
+                    case .posix(let code):
+                        print("waiting posix error: \(code)")
+                        self?.delegate?.connectionChanged(state: .failed(error))
+                        break
+                    case .tls(let code):
+                        print("waiting tls error: \(code)")
+                        self?.delegate?.connectionChanged(state: .failed(error))
+                        break
+                    @unknown default:
+                        self?.delegate?.connectionChanged(state: .waiting)
+                }
             case .cancelled:
                 self?.delegate?.connectionChanged(state: .cancelled)
             case .failed(let error):
