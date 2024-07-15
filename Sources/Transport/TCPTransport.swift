@@ -53,7 +53,7 @@ public class TCPTransport: Transport {
         //normal connection, will use the "connect" method below
     }
     
-    public func connect(url: URL, timeout: Double = 10, certificatePinning: CertificatePinning? = nil) {
+    public func connect(url: URL, host: String?, timeout: Double = 10, certificatePinning: CertificatePinning? = nil) {
         guard let parts = url.getParts() else {
             delegate?.connectionChanged(state: .failed(TCPTransportError.invalidRequest))
             return
@@ -64,13 +64,16 @@ public class TCPTransport: Transport {
 
         let tlsOptions = isTLS ? NWProtocolTLS.Options() : nil
         if let tlsOpts = tlsOptions {
+            if let host {
+                sec_protocol_options_set_tls_server_name(tlsOpts.securityProtocolOptions, host)
+            }
             sec_protocol_options_set_verify_block(tlsOpts.securityProtocolOptions, { (sec_protocol_metadata, sec_trust, sec_protocol_verify_complete) in
                 let trust = sec_trust_copy_ref(sec_trust).takeRetainedValue()
                 guard let pinner = certificatePinning else {
                     sec_protocol_verify_complete(true)
                     return
                 }
-                pinner.evaluateTrust(trust: trust, domain: parts.host, completion: { (state) in
+                pinner.evaluateTrust(trust: trust, domain: host ?? parts.host, completion: { (state) in
                     switch state {
                     case .success:
                         sec_protocol_verify_complete(true)
