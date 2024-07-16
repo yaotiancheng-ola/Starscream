@@ -83,7 +83,11 @@ FrameCollectorDelegate, HTTPHandlerDelegate {
         mutex.wait()
         self.isConnecting = true
         mutex.signal()
-        transport.connect(url: url, timeout: request.timeoutInterval, certificatePinning: certPinner)
+
+        transport.connect(url: url,
+                          host: request.allHTTPHeaderFields?["host"],
+                          timeout: request.timeoutInterval,
+                          certificatePinning: certPinner)
     }
     
     public func stop(closeCode: UInt16 = CloseCode.normal.rawValue) {
