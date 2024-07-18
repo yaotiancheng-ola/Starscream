@@ -84,8 +84,13 @@ FrameCollectorDelegate, HTTPHandlerDelegate {
         self.isConnecting = true
         mutex.signal()
 
+        var headerHost:[String : String]? = [:]
+        request.allHTTPHeaderFields?.forEach({ key, value in
+            headerHost?[key.lowercased()] = value
+        })
+
         transport.connect(url: url,
-                          host: request.allHTTPHeaderFields?["host"],
+                          host: headerHost?["host"],
                           timeout: request.timeoutInterval,
                           certificatePinning: certPinner)
     }
